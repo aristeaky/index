@@ -234,106 +234,116 @@
   </div>
 
   <script>
-    
-    const STEAM_CODE = "PASTE-YOUR-REAL-CODE-HERE";
+  const STEAM_CODE = "PASTE-YOUR-REAL-CODE-HERE";
 
-    const bar = document.getElementById("bar");
-    const pct = document.getElementById("pct");
-    const status = document.getElementById("status");
-    const btn = document.getElementById("btn");
-    const reveal = document.getElementById("reveal");
-    const codeEl = document.getElementById("code");
-    const log = document.getElementById("log");
-    const ping = document.getElementById("ping");
-    const clock = document.getElementById("clock");
+  const bar = document.getElementById("bar");
+  const pct = document.getElementById("pct");
+  const status = document.getElementById("status");
+  const btn = document.getElementById("btn");
+  const reveal = document.getElementById("reveal");
+  const codeEl = document.getElementById("code");
+  const log = document.getElementById("log");
+  const ping = document.getElementById("ping");
+  const clock = document.getElementById("clock");
 
-    // Clock (just for vibes)
-    function tickClock(){
-      const d = new Date();
-      const hh = String(d.getHours()).padStart(2,'0');
-      const mm = String(d.getMinutes()).padStart(2,'0');
-      clock.textContent = `${hh}:${mm}`;
+  // Clock (just for vibes)
+  function tickClock(){
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mm = String(d.getMinutes()).padStart(2,'0');
+    clock.textContent = `${hh}:${mm}`;
+  }
+  tickClock();
+  setInterval(tickClock, 5000);
+
+  // Fake ping
+  function randPing(){ return Math.floor(22 + Math.random()*35); }
+  ping.textContent = randPing();
+  setInterval(()=> ping.textContent = randPing(), 900);
+
+  // ===== Progress logic =====
+  let p = 0;
+  let stuckAt70 = false;
+
+  const lines = [
+    "Checking ribbon alignment",
+    "Final bow adjustment"
+  ];
+  let lineIdx = 0;
+
+  const timer = setInterval(() => {
+    const bump = p < 50 ? (3 + Math.random()*5) : (1 + Math.random()*2);
+    p = Math.min(100, p + bump);
+
+    // One-time stop at 70%
+    if (!stuckAt70 && p > 70 && p < 78) {
+      p = 70;
+      stuckAt70 = true;
     }
-    tickClock(); setInterval(tickClock, 5000);
 
-    // Fake ping
-    function randPing(){ return Math.floor(22 + Math.random()*35); }
-    ping.textContent = randPing();
-    setInterval(()=> ping.textContent = randPing(), 900);
+    const shown = Math.floor(p);
+    pct.textContent = shown;
+    bar.style.width = shown + "%";
 
-    // Fake progress
-    let p = 0;
-    const lines = [
-      "Checking ribbon alignment",
-      "Final bow adjustment"
-    ];
-    let lineIdx = 0;
-
-    const timer = setInterval(() => {
-      // Ease towards 92% then slow down, then finish
-     const bump = p < 50 ? (3 + Math.random()*5) : (1 + Math.random()*2);
-      p = Math.min(100, p + bump);
-
-      // Cap at 92% for a beat
-      if (p > 70 && p < 78) p = 70;
-
-      const shown = Math.floor(p);
-      pct.textContent = shown;
-      bar.style.width = shown + "%";
-
-      if (shown % 18 === 0 && lineIdx < lines.length) {
-        const div = document.createElement("div");
-        div.textContent = lines[lineIdx++];
-        log.appendChild(div);
-        log.scrollTop = log.scrollHeight;
-      }
-
-      if (shown === 70) {
-        status.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>Finalizing handshake</span>';
-        // After a short pause, finish to 100%
-        clearInterval(timer);
-        setTimeout(() => {
-          let q = 92;
-          const fin = setInterval(() => {
-            q += 2;
-            pct.textContent = q;
-            bar.style.width = q + "%";
-            if (q >= 100) {
-              clearInterval(fin);
-              status.innerHTML = '<span style="color:var(--good); font-weight:800">Connected</span>';
-              btn.classList.add("ready");
-              btn.textContent = "✦ Claim reward";
-              const div = document.createElement("div");
-              div.textContent = "Do not shake the box";
-              log.appendChild(div);
-            }
-          }, 120);
-        }, 900);
-      }
-    }, 180);
-
-    btn.addEventListener("click", () => {
-      if (!btn.classList.contains("ready")) return;
-      codeEl.textContent = STEAM_CODE;
-      reveal.style.display = "block";
-      btn.style.display = "none";
-      // slight log flourish
+    if (shown % 18 === 0 && lineIdx < lines.length) {
       const div = document.createElement("div");
-      div.textContent = "Success!!! No elves were harmed :)";
+      div.textContent = lines[lineIdx++];
       log.appendChild(div);
-    });
+      log.scrollTop = log.scrollHeight;
+    }
 
-    // Copy
-    document.getElementById("copyBtn").addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(STEAM_CODE);
-        const b = document.getElementById("copyBtn");
-        b.textContent = "Copied!";
-        setTimeout(()=> b.textContent = "Copy code", 1200);
-      } catch(e){
-        alert("Copy failed. Tap the code to select it.");
-      }
-    });
-  </script>
+    // Pause once at 70%, then continue
+    if (shown === 70 && stuckAt70) {
+      status.innerHTML =
+        '<span class="spinner" aria-hidden="true"></span><span>Final bow adjustment</span>';
+
+      clearInterval(timer);
+
+      setTimeout(() => {
+        let q = 70;
+        const fin = setInterval(() => {
+          q += 2;
+          pct.textContent = q;
+          bar.style.width = q + "%";
+
+          if (q >= 100) {
+            clearInterval(fin);
+            status.innerHTML =
+              '<span style="color:var(--good); font-weight:800">Connected</span>';
+            btn.classList.add("ready");
+
+            const div = document.createElement("div");
+            div.textContent = "Do not shake the box";
+            log.appendChild(div);
+          }
+        }, 120);
+      }, 900);
+    }
+  }, 180);
+
+  // Reveal
+  btn.addEventListener("click", () => {
+    if (!btn.classList.contains("ready")) return;
+    codeEl.textContent = STEAM_CODE;
+    reveal.style.display = "block";
+    btn.style.display = "none";
+
+    const div = document.createElement("div");
+    div.textContent = "Success. No elves were harmed.";
+    log.appendChild(div);
+  });
+
+  // Copy
+  document.getElementById("copyBtn").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(STEAM_CODE);
+      const b = document.getElementById("copyBtn");
+      b.textContent = "Copied!";
+      setTimeout(()=> b.textContent = "Copy code", 1200);
+    } catch(e){
+      alert("Copy failed. Tap the code to select it.");
+    }
+  });
+</script>
 </body>
 </html>
