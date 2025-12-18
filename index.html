@@ -271,11 +271,11 @@
 
     const timer = setInterval(() => {
       // Ease towards 92% then slow down, then finish
-      const bump = p < 70 ? (3 + Math.random()*5) : (1 + Math.random()*2);
+     const bump = p < 50 ? (3 + Math.random()*5) : (1 + Math.random()*2);
       p = Math.min(100, p + bump);
 
       // Cap at 92% for a beat
-      if (p > 92 && p < 98) p = 92;
+      if (p > 70 && p < 78) p = 70;
 
       const shown = Math.floor(p);
       pct.textContent = shown;
