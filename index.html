@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Loading gift…</title>
+  <title>Connecting…</title>
   <style>
     :root{
       --bg:#0b111b;
       --panel:#0f1a2b;
       --text:#d7e1f2;
       --muted:#8ea2c6;
-      --accent:#66c0f4;
+      --line:#1f2f4d;
+      --accent:#66c0f4; /* steam-ish light blue */
       --good:#7ee787;
       --shadow: 0 20px 60px rgba(0,0,0,.45);
       --radius: 18px;
@@ -21,9 +22,9 @@
       min-height:100vh;
       display:grid;
       place-items:center;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       background:
-        radial-gradient(1200px 600px at 20% 10%, rgba(102,192,244,.14), transparent 60%),
+        radial-gradient(1200px 600px at 20% 10%, rgba(102,192,244,.16), transparent 60%),
         radial-gradient(900px 500px at 80% 30%, rgba(126,231,135,.10), transparent 60%),
         linear-gradient(180deg, var(--bg), #070b12);
       color:var(--text);
@@ -31,7 +32,8 @@
     }
     .card{
       width:min(560px, 100%);
-      background: var(--panel);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 35%), var(--panel);
+      border:1px solid rgba(102,192,244,.18);
       border-radius:var(--radius);
       box-shadow: var(--shadow);
       overflow:hidden;
@@ -39,167 +41,302 @@
     .topbar{
       padding:16px 18px;
       display:flex;
+      align-items:center;
       justify-content:space-between;
       border-bottom:1px solid rgba(142,162,198,.14);
     }
-    .content{ padding:18px; }
+    .brand{
+      display:flex; gap:10px; align-items:center;
+      letter-spacing:.2px;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:50%;
+      background: rgba(102,192,244,.85);
+      box-shadow:0 0 0 6px rgba(102,192,244,.12);
+    }
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .content{
+      padding:18px;
+    }
     .title{
       font-size:18px;
-      margin:0 0 10px;
+      margin:0 0 10px 0;
+      letter-spacing:.3px;
     }
     .log{
-      background: rgba(0,0,0,.25);
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(142,162,198,.14);
       border-radius:14px;
       padding:14px;
-      line-height:1.5;
-      color:var(--muted);
-      font-size:13px;
+      line-height:1.45;
     }
     .row{
-      display:flex;
-      justify-content:space-between;
+      display:flex; align-items:center; justify-content:space-between; gap:14px;
       margin-top:12px;
     }
     .status{
-      font-size:13px;
       color:var(--muted);
+      font-size:13px;
+      display:flex; align-items:center; gap:8px;
       min-height:20px;
     }
+    .spinner{
+      width:14px;height:14px;border-radius:50%;
+      border:2px solid rgba(142,162,198,.25);
+      border-top-color: var(--accent);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     .barWrap{
       margin-top:12px;
       height:12px;
-      background: rgba(255,255,255,.08);
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(142,162,198,.14);
       border-radius:999px;
       overflow:hidden;
     }
     .bar{
       height:100%;
       width:0%;
-      background: linear-gradient(90deg, var(--accent), var(--good));
+      background: linear-gradient(90deg, rgba(102,192,244,.95), rgba(126,231,135,.85));
       transition: width .25s ease;
+    }
+    .meta{
+      margin-top:10px;
+      display:flex; justify-content:space-between; gap:10px;
+      color:var(--muted);
+      font-size:12px;
     }
     .btn{
       width:100%;
       margin-top:14px;
-      padding:12px;
+      padding:12px 14px;
       border-radius:14px;
-      border:none;
-      background: rgba(102,192,244,.15);
+      border:1px solid rgba(102,192,244,.28);
+      background: rgba(102,192,244,.10);
       color:var(--text);
       font-weight:700;
-      opacity:.4;
+      letter-spacing:.2px;
+      cursor:pointer;
+      opacity:.45;
       pointer-events:none;
+      transition: transform .08s ease, background .2s ease, opacity .2s ease;
     }
+    .btn:active{ transform: translateY(1px); }
     .btn.ready{
       opacity:1;
       pointer-events:auto;
+      background: rgba(102,192,244,.16);
     }
     .reveal{
       display:none;
       margin-top:14px;
       padding:14px;
       border-radius:14px;
-      background: rgba(126,231,135,.1);
+      border:1px solid rgba(126,231,135,.22);
+      background: rgba(126,231,135,.08);
     }
     .code{
       margin-top:8px;
-      padding:10px;
+      padding:10px 12px;
       border-radius:12px;
-      background: rgba(0,0,0,.25);
+      border:1px dashed rgba(215,225,242,.30);
+      background: rgba(0,0,0,.22);
       font-size:16px;
       letter-spacing:1px;
-      user-select:all;
+      user-select: all;
+      word-break: break-all;
+    }
+    .copy{
+      margin-top:10px;
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .mini{
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(142,162,198,.20);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      cursor:pointer;
     }
     .footer{
       padding:14px 18px;
       border-top:1px solid rgba(142,162,198,.14);
+      color:rgba(142,162,198,.9);
       font-size:12px;
-      color:var(--muted);
       display:flex;
       justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
     }
   </style>
 </head>
-
 <body>
-<div class="card">
-  <div class="topbar">
-    <div>Steam Services</div>
-    <div>🎄</div>
+  <div class="card" role="application" aria-label="Steam connection">
+    <div class="topbar">
+      <div class="brand">
+        <span class="dot" aria-hidden="true"></span>
+        <div>
+          <div style="font-weight:800">Steam Services</div>
+          <div class="hint">secure gift delivery</div>
+        </div>
+      </div>
+      <div class="hint" id="clock">--:--</div>
+    </div>
+
+    <div class="content">
+      <h1 class="title">Santa is loading your gift…</h1>
+
+      <div class="log" id="log">
+        <div>[client] initializing session</div>
+        <div>[net] resolving region endpoint</div>
+        <div>[auth] handshake pending</div>
+      </div>
+
+      <div class="row">
+        <div class="status" id="status">
+          <span class="spinner" aria-hidden="true"></span>
+          <span>Establishing connection</span>
+        </div>
+        <div class="hint"><span id="pct">0</span>%</div>
+      </div>
+
+      <div class="barWrap" aria-label="progress">
+        <div class="bar" id="bar"></div>
+      </div>
+
+      <div class="meta">
+        <div>region: eu-ath</div>
+        <div>latency: <span id="ping">--</span> ms</div>
+      </div>
+
+      <button class="btn" id="btn">✦ Claim reward</button>
+
+      <div class="reveal" id="reveal">
+        <div style="font-weight:800; color:var(--good)">Connection established.</div>
+        <div style="margin-top:6px; color:var(--text)">Your Steam gift code:</div>
+        <div class="code" id="code">XXXXX-XXXXX-XXXXX</div>
+        <div class="copy">
+          <span>Tip: tap to select, or copy.</span>
+          <button class="mini" id="copyBtn" type="button">Copy code</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>Hint: Do not refresh. Santa gets nervous!!!</div>
+      <div>build: santa-1.0</div>
+    </div>
   </div>
 
-  <div class="content">
-    <h1 class="title">Santa is loading your gift…</h1>
+  <script>
+    
+    const STEAM_CODE = "PASTE-YOUR-REAL-CODE-HERE";
 
-    <div class="log" id="log">
-      <div>Wrapping paper detected</div>
-      <div>Checking ribbon alignment</div>
-       <div>Final bow adjustment</div>
-       <div>Do not shake the box</div>
-      <div>Success!!! No elves were harmed</div>
-     
-    </div>
+    const bar = document.getElementById("bar");
+    const pct = document.getElementById("pct");
+    const status = document.getElementById("status");
+    const btn = document.getElementById("btn");
+    const reveal = document.getElementById("reveal");
+    const codeEl = document.getElementById("code");
+    const log = document.getElementById("log");
+    const ping = document.getElementById("ping");
+    const clock = document.getElementById("clock");
 
-    <div class="row">
-      <div class="status" id="statusText">Please wait</div>
-      <div class="status"><span id="pct">0</span>%</div>
-    </div>
+    // Clock (just for vibes)
+    function tickClock(){
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mm = String(d.getMinutes()).padStart(2,'0');
+      clock.textContent = `${hh}:${mm}`;
+    }
+    tickClock(); setInterval(tickClock, 5000);
 
-    <div class="barWrap">
-      <div class="bar" id="bar"></div>
-    </div>
+    // Fake ping
+    function randPing(){ return Math.floor(22 + Math.random()*35); }
+    ping.textContent = randPing();
+    setInterval(()=> ping.textContent = randPing(), 900);
 
-    <button class="btn" id="btn">✦ Claim reward</button>
+    // Fake progress
+    let p = 0;
+    const lines = [
+      "Wrapping paper detected",
+      "Checking ribbon alignment",
+      "Final bow adjustment"
+    ];
+    let lineIdx = 0;
 
-    <div class="reveal" id="reveal">
-      <div style="font-weight:800;color:var(--good)">Connection established.</div>
-      <div>Your Steam gift code:</div>
-      <div class="code" id="code">XXXXX-XXXXX-XXXXX</div>
-    </div>
-  </div>
+    const timer = setInterval(() => {
+      // Ease towards 92% then slow down, then finish
+      const bump = p < 70 ? (3 + Math.random()*5) : (1 + Math.random()*2);
+      p = Math.min(100, p + bump);
 
-  <div class="footer">
-    <div>Tip: Do not refresh. Santa gets nervous.</div>
-    <div>build: santa-1.0</div>
-  </div>
-</div>
+      // Cap at 92% for a beat
+      if (p > 92 && p < 98) p = 92;
 
-<script>
-const STEAM_CODE = "PASTE-YOUR-REAL-CODE-HERE";
+      const shown = Math.floor(p);
+      pct.textContent = shown;
+      bar.style.width = shown + "%";
 
-const bar = document.getElementById("bar");
-const pct = document.getElementById("pct");
-const btn = document.getElementById("btn");
-const reveal = document.getElementById("reveal");
-const codeEl = document.getElementById("code");
-const statusText = document.getElementById("statusText");
+      if (shown % 18 === 0 && lineIdx < lines.length) {
+        const div = document.createElement("div");
+        div.textContent = lines[lineIdx++];
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
+      }
 
+      if (shown === 92) {
+        status.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>Finalizing handshake</span>';
+        // After a short pause, finish to 100%
+        clearInterval(timer);
+        setTimeout(() => {
+          let q = 92;
+          const fin = setInterval(() => {
+            q += 2;
+            pct.textContent = q;
+            bar.style.width = q + "%";
+            if (q >= 100) {
+              clearInterval(fin);
+              status.innerHTML = '<span style="color:var(--good); font-weight:800">Connected</span>';
+              btn.classList.add("ready");
+              btn.textContent = "✦ Claim reward";
+              const div = document.createElement("div");
+              div.textContent = "Do not shake the box";
+              log.appendChild(div);
+            }
+          }, 120);
+        }, 900);
+      }
+    }, 180);
 
-let p = 0;
-let s = 0;
+    btn.addEventListener("click", () => {
+      if (!btn.classList.contains("ready")) return;
+      codeEl.textContent = STEAM_CODE;
+      reveal.style.display = "block";
+      btn.style.display = "none";
+      // slight log flourish
+      const div = document.createElement("div");
+      div.textContent = "Success!!! No elves were harmed :)";
+      log.appendChild(div);
+    });
 
-setInterval(() => {
-  if (p < 100) {
-    p += p < 90 ? 4 : 2;
-    if (p > 100) p = 100;
-    bar.style.width = p + "%";
-    pct.textContent = p;
-  }
-  if (p >= 100) {
-    btn.classList.add("ready");
-  }
-}, 200);
-
-setInterval(() => {
-  if (s < statuses.length - 1) s++;
-  statusText.textContent = statuses[s];
-}, 1800);
-
-btn.addEventListener("click", () => {
-  codeEl.textContent = STEAM_CODE;
-  reveal.style.display = "block";
-  btn.style.display = "none";
-});
-</script>
+    // Copy
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(STEAM_CODE);
+        const b = document.getElementById("copyBtn");
+        b.textContent = "Copied!";
+        setTimeout(()=> b.textContent = "Copy code", 1200);
+      } catch(e){
+        alert("Copy failed. Tap the code to select it.");
+      }
+    });
+  </script>
 </body>
 </html>
